@@ -8,8 +8,9 @@ from updt_cl import Ui_Dialog
 from updt_car import Ui_Dialog_1
 from crt_clcar import Ui_Dialog_2
 from tbl1 import Ui_MainWindow
+from tbl2 import Ui_MainWindow1
 
-class TableViewer(QMainWindow, Ui_MainWindow):
+class TableViewer(QMainWindow, Ui_MainWindow1):
     def __init__(self):
         super().__init__()
         self.setupUi(self)
@@ -26,6 +27,7 @@ class TableViewer(QMainWindow, Ui_MainWindow):
         self.tableWidget.doubleClicked.connect(self.update_client)
         self.pushButtonAddCl.clicked.connect(self.create_client)
         self.pushButtonDelClient.clicked.connect(self.delete_client)
+        self.pushButtonDelCar.clicked.connect(self.delete_car)
         self.tableWidget_2.doubleClicked.connect(self.update_car)
         self.pushButtonAddCar.clicked.connect(self.create_car)
         self.pushButtonAddClCar.clicked.connect(self.create_client_car)
@@ -116,6 +118,14 @@ class TableViewer(QMainWindow, Ui_MainWindow):
         current_row = self.tableWidget.currentRow()
         id_ = int(self.tableWidget.item(current_row, 0).text())
         cl = self.session.query(Client).get(id_)
+        clcars = self.session.query(ClientCar).filter(ClientCar.client_id == cl.client_id)
+        for clcar in clcars:
+            self.session.delete(clcar)
+            self.session.commit()
+        cars = self.session.query(Car).filter(Car.main_owner_id==cl.client_id)
+        for car in cars:
+            self.session.delete(car)
+            self.session.commit()
         self.session.delete(cl)
         self.session.commit()
         self.load_table()
@@ -136,6 +146,10 @@ class TableViewer(QMainWindow, Ui_MainWindow):
         current_row = self.tableWidget_2.currentRow()
         id_ = int(self.tableWidget_2.item(current_row, 0).text())
         cr = self.session.query(Car).get(id_)
+        clcars = self.session.query(ClientCar).filter(ClientCar.car_id == cr.car_id)
+        for clcar in clcars:
+            self.session.delete(clcar)
+            self.session.commit()
         self.session.delete(cr)
         self.session.commit()
         self.load_table_1()
